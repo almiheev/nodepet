@@ -1,8 +1,8 @@
+const livr = require('livr');
 const db = require('../db');
 
 const itemsController = {
     getItems(ctx, next) {
-        console.log(ctx.headers);
         const items = db.getItems();
         ctx.body = items;
     },
@@ -21,6 +21,20 @@ const itemsController = {
         ctx.body = '';
     },
     updateItem(ctx) {
+        const validator = new livr.Validator({
+            itemId: ['positive_integer','required']
+        });
+
+        const validData = validator.validate({
+            itemId: ctx.params.itemId
+        });
+
+        if(!validData) {
+            ctx.body = validator.getErrors();
+            ctx.status = 400;
+            return;
+        }
+
         const updatedItem = db.updateItem(
             Number(ctx.params.itemId),
             ctx.request.body
